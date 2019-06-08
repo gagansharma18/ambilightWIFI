@@ -67,10 +67,10 @@ void loop() {
        if (Serial.available() > 0) {
               incomingStr = Serial.readString();
               incomingStr.trim();
-              Serial.print(incomingStr.length());
               if (incomingStr.equals("reset")) {
                   Serial.println("Resetting......");
-                  wifiManager.resetSettings();
+                  //wifiManager.resetSettings();
+                   ESP.reset();
               }
         }
 }
