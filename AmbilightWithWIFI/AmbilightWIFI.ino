@@ -4,12 +4,21 @@
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
+#include <DoubleResetDetect.h>
 
 
-#define pixelCount 51
+#define pixelCount 80
 #define pixelPin   13 //D7
 const int SerialSpeed = 230400;
+// maximum number of seconds between resets that
+// counts as a double reset 
+#define DRD_TIMEOUT 2.0
 
+// address to the block in the RTC user memory
+// change it if it collides with another usage 
+// of the address block
+#define DRD_ADDRESS 0x00
+DoubleResetDetect drd(DRD_TIMEOUT, DRD_ADDRESS);
 
 
 
@@ -194,11 +203,26 @@ void Adalight () {
 
 void setup() {
     Serial.begin(SerialSpeed);
+
+ if (drd.detect())
+    {
+        //Serial.println("** Double reset boot **");
+         Serial.print("Resetting......");
+         wifiManager.resetSettings();
+    }
+    else
+    {
+        Serial.println("** Normal boot **");
+    }
     
      //set led pin as output
   pinMode(BUILTIN_LED, OUTPUT);
   // start ticker with 0.5 because we start in AP mode and try to connect
   ticker.attach(0.6, tick);
+
+  wifiManager.setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
+  wifiManager.setSTAStaticIPConfig(IPAddress(192,168,0,110), IPAddress(192,168,0,1), IPAddress(255,255,255,0));
+  
   //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   wifiManager.setAPCallback(configModeCallback);
 
@@ -206,6 +230,7 @@ void setup() {
   //if it does not connect it starts an access point with the specified name
   //here  "GaganAmbiLight"
   //and goes into a blocking loop awaiting configuration
+
   if (!wifiManager.autoConnect("GaganAmbiLight")) {
     Serial.println("failed to connect and hit timeout");
     //reset and try again, or maybe put it to deep sleep

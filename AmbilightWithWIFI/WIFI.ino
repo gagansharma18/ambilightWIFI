@@ -48,6 +48,7 @@ void setup() {
   //if it does not connect it starts an access point with the specified name
   //here  "GaganAmbiLight"
   //and goes into a blocking loop awaiting configuration
+  wifiManager.setSTAStaticIPConfig(IPAddress(192,168,0,99), IPAddress(192,168,0,1), IPAddress(255,255,255,0));
   if (!wifiManager.autoConnect("GaganAmbiLight")) {
     Serial.println("failed to connect and hit timeout");
     //reset and try again, or maybe put it to deep sleep
