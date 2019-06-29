@@ -255,7 +255,7 @@ void Adalight () {
 void setup() {
     Serial.begin(SerialSpeed);
 
- if (drd.detect())
+ /*if (drd.detect())
     {
         //Serial.println("** Double reset boot **");
          Serial.print("Resetting......");
@@ -264,7 +264,7 @@ void setup() {
     else
     {
         Serial.println("** Normal boot **");
-    }
+    }*/
     
      //set led pin as output
   pinMode(BUILTIN_LED, OUTPUT);
@@ -280,6 +280,9 @@ void setup() {
   IPAddress _ip = IPAddress(192, 168, 0, 1);
   IPAddress _gw = IPAddress(192, 168, 0, 1);
   IPAddress _sn = IPAddress(255, 255, 255, 0);
+  if(drd.detect()){
+    Serial.println("** detect **");
+     wifiManager.resetSettings();
   wifiManager.setAPStaticIPConfig(_ip, _gw, _sn);
   /*IPAddress _ip1, _gw1, _sn1;
   _ip1.fromString("192.168.0.110");
@@ -293,7 +296,10 @@ void setup() {
   //end-block1
   wifiManager.setSTAStaticIPConfig(_ip1, _gw1, _sn1);*/
   //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
-  wifiManager.setAPCallback(configModeCallback);
+  
+    Serial.print("Resetting......");
+        
+        wifiManager.setAPCallback(configModeCallback);
 
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
@@ -305,6 +311,7 @@ void setup() {
     //reset and try again, or maybe put it to deep sleep
     ESP.reset();
     delay(1000);
+    
   }
 
   //if you get here you have connected to the WiFi
@@ -319,10 +326,12 @@ void setup() {
     Serial.println("Error setting up MDNS responder!");
   }*/
   
-  ticker.detach();
+ 
+  }
+
+   ticker.detach();
   //keep LED off
   digitalWrite(BUILTIN_LED, HIGH);
-    
     Serial.println();
     strip.Begin();
     strip.Show();
