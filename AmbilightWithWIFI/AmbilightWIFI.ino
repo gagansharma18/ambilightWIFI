@@ -5,11 +5,13 @@
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 #include <DoubleResetDetect.h>
+//#include <ESP8266mDNS.h>        // Include the mDNS library
 
 
 #define pixelCount 80
 #define pixelPin   13 //D7
-const int SerialSpeed = 230400;
+#define WiFi_hostname "GaganAmbiLight"
+#define SerialSpeed 230400
 // maximum number of seconds between resets that
 // counts as a double reset 
 #define DRD_TIMEOUT 2.0
@@ -49,15 +51,8 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 WiFiManager wifiManager;
 //reset settings - for testing
 //wifiManager.resetSettings();
-
-
-
 WiFiServer server(23);
 WiFiClient serverClients[1];
-
-
-
-
 NeoPixelBus<NeoRgbFeature, NeoEsp8266BitBang800KbpsMethod> strip(pixelCount, pixelPin);
 uint8_t*  pixelsPOINT = (uint8_t*)strip.Pixels();
 uint8_t prefix[] = {'A', 'd', 'a'}, hi, lo, chk, i; 
@@ -220,9 +215,27 @@ void setup() {
   // start ticker with 0.5 because we start in AP mode and try to connect
   ticker.attach(0.6, tick);
 
-  wifiManager.setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
-  wifiManager.setSTAStaticIPConfig(IPAddress(192,168,0,110), IPAddress(192,168,0,1), IPAddress(255,255,255,0));
-  
+  //wifiManager.setAPStaticIPConfig(IPAddress(192,168,0,1), IPAddress(192,168,0,1), IPAddress(255,255,255,0));
+  //wifiManager.setSTAStaticIPConfig(IPAddress(0,0,0,0), IPAddress(0,0,0,0), IPAddress(0,0,0,0));
+
+   // wifiManager.setTimeout(120);
+//  WiFi.hostname(WiFi_hostname);
+  //Se the AP Static IP
+  IPAddress _ip = IPAddress(192, 168, 0, 1);
+  IPAddress _gw = IPAddress(192, 168, 0, 1);
+  IPAddress _sn = IPAddress(255, 255, 255, 0);
+  wifiManager.setAPStaticIPConfig(_ip, _gw, _sn);
+  /*IPAddress _ip1, _gw1, _sn1;
+  _ip1.fromString("192.168.0.110");
+  _gw1.fromString("192.168.0.1");
+  _sn1.fromString("255.255.0.0");*/
+
+  /* IPAddress _ip1, _gw1, _sn1;
+  _ip1.fromString("0.0.0.0");
+  _gw1.fromString("0.0.0.0");
+  _sn1.fromString("0.0.0.0");
+  //end-block1
+  wifiManager.setSTAStaticIPConfig(_ip1, _gw1, _sn1);*/
   //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   wifiManager.setAPCallback(configModeCallback);
 
@@ -230,8 +243,8 @@ void setup() {
   //if it does not connect it starts an access point with the specified name
   //here  "GaganAmbiLight"
   //and goes into a blocking loop awaiting configuration
-
-  if (!wifiManager.autoConnect("GaganAmbiLight")) {
+ //WiFi.hostname(WiFi_hostname);
+  if (!wifiManager.autoConnect(WiFi_hostname)) {
     Serial.println("failed to connect and hit timeout");
     //reset and try again, or maybe put it to deep sleep
     ESP.reset();
@@ -239,11 +252,20 @@ void setup() {
   }
 
   //if you get here you have connected to the WiFi
-  Serial.println("connected...yeey :)");
-  Serial.println(WiFi.localIP());
+ Serial.println("connected...yeey :)");
+  //Serial.print("Connected to ");
+ // Serial.println(WiFi.SSID());              // Tell us what network we're connected to
+  Serial.print("IP address:\t");
+  Serial.println(WiFi.localIP());           // Send the IP address of the ESP8266 to the computer
+
+  /*WiFi.hostname(WiFi_hostname);
+  if (!MDNS.begin(WiFi_hostname)) {
+    Serial.println("Error setting up MDNS responder!");
+  }*/
+  
   ticker.detach();
-  //keep LED on
-  digitalWrite(BUILTIN_LED, LOW);
+  //keep LED off
+  digitalWrite(BUILTIN_LED, HIGH);
     
     Serial.println();
     strip.Begin();
@@ -252,17 +274,19 @@ void setup() {
    // WiFi.begin("NPMGroup-Guest");
     server.begin();
     server.setNoDelay(true);
+
+   // MDNS.addService("http", "tcp", 80);
 }
 
 void loop() {
-    if (Serial.available() > 0) {
+   /* if (Serial.available() > 0) {
               incomingStr = Serial.readString();
               incomingStr.trim();
               if (incomingStr.equals("reset")) {
                   Serial.print("Resetting......");
                   wifiManager.resetSettings();
               }
-        }
+        }*/
     if(millis() - update_strip_time > 30) {
       strip.Show();
       update_strip_time = millis();
