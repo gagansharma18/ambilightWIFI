@@ -4,6 +4,7 @@ https://github.com/topics/ambilight
 
 PROGRAM
 https://github.com/Aircoookie/WLED/releases
+https://kno.wled.ge/interfaces/udp-realtime/
 
 SOFTWARES
 https://github.com/psieg/Lightpack
