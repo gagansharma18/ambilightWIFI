@@ -19,4 +19,5 @@ Flash  ESP01
 ```
 https://create.arduino.cc/projecthub/pratikdesai/flash-firmware-on-esp8266-esp-01-module-e1f758
 https://create.arduino.cc/projecthub/pratikdesai/how-to-program-esp8266-esp-01-module-with-arduino-uno-598166
+https://install.wled.me/v2.htm
 ```
